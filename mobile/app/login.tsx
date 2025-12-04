@@ -1,121 +1,94 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  StyleSheet,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import Logo from "../components/Logo";
 
-export default function Login() {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+export default function LoginScreen() {
   const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
-  const handleLogin = (): void => {
-    if (email === "test@mail.com" && password === "1234") {
-      router.push(".//home");
-    } else {
-      Alert.alert("Error", "Credenciales incorrectas");
+  const handleLogin = () => {
+    if (!name || !email) {
+      Alert.alert("Error", "Completa todos los campos");
+      return;
     }
+
+    const token = Math.random().toString(36).substring(2, 15);
+
+    // Navegamos a la pantalla Home enviando los datos
+    router.push({
+      pathname: "/home",
+      params: { name, email, token },
+    });
   };
 
   return (
-    <LinearGradient colors={["#2563EB", "#1E3A8A"]} style={styles.container}>
-      <Logo />
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#071233",
+        justifyContent: "center",
+        padding: 24,
+      }}
+    >
+      <Text
+        style={{
+          color: "#fff",
+          fontSize: 26,
+          fontWeight: "700",
+          textAlign: "center",
+          marginBottom: 30,
+        }}
+      >
+        Login
+      </Text>
 
-      <View style={styles.form}>
-        <Text style={styles.label}>Correo electrónico</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ingresa tu correo"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          placeholderTextColor="#888"
-          autoCapitalize="none"
-        />
+      <TextInput
+        placeholder="Nombre completo"
+        placeholderTextColor="#ccc"
+        value={name}
+        onChangeText={setName}
+        style={{
+          backgroundColor: "#0a1a44",
+          borderRadius: 10,
+          padding: 14,
+          color: "#fff",
+          marginBottom: 14,
+          borderWidth: 1,
+          borderColor: "rgba(255,255,255,0.1)",
+        }}
+      />
 
-        <Text style={styles.label}>Contraseña</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ingresa tu contraseña"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          placeholderTextColor="#888"
-        />
+      <TextInput
+        placeholder="Correo electrónico"
+        placeholderTextColor="#ccc"
+        value={email}
+        onChangeText={setEmail}
+        style={{
+          backgroundColor: "#0a1a44",
+          borderRadius: 10,
+          padding: 14,
+          color: "#fff",
+          marginBottom: 14,
+          borderWidth: 1,
+          borderColor: "rgba(255,255,255,0.1)",
+        }}
+      />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Iniciar sesión</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => Alert.alert("Login con Google")}>
-          <Text style={styles.googleText}>Iniciar sesión con Google</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => Alert.alert("Ir a registro")}>
-          <Text style={styles.registerText}>
-            ¿No tienes cuenta? <Text style={styles.link}>Regístrate</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
+      <TouchableOpacity
+        onPress={handleLogin}
+        style={{
+          backgroundColor: "#F97316",
+          borderRadius: 10,
+          paddingVertical: 14,
+          alignItems: "center",
+          marginTop: 10,
+        }}
+      >
+        <Text style={{ color: "#071233", fontWeight: "700", fontSize: 16 }}>
+          Acceder a la instalación
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 30,
-  },
-  form: {
-    width: "100%",
-  },
-  label: {
-    color: "#fff",
-    fontSize: 16,
-    marginBottom: 6,
-  },
-  input: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
-    fontSize: 16,
-  },
-  button: {
-    backgroundColor: "#3B82F6",
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 4,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  googleText: {
-    color: "#fff",
-    textAlign: "center",
-    marginTop: 20,
-    textDecorationLine: "underline",
-    fontSize: 15,
-  },
-  registerText: {
-    color: "#fff",
-    textAlign: "center",
-    marginTop: 8,
-    fontSize: 15,
-  },
-  link: {
-    textDecorationLine: "underline",
-    fontWeight: "bold",
-  },
-});
