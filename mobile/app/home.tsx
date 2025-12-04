@@ -1,23 +1,32 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
 export default function HomeScreen() {
   const { name, email, token } = useLocalSearchParams();
   const [logs, setLogs] = useState([]);
+  const [dateTime, setDateTime] = useState("");
+
+  // Actualizar fecha y hora cada segundo
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const formatted = now.toLocaleString(); // fecha y hora legible
+      setDateTime(formatted);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const log = (msg) => {
-    console.log(msg);
     setLogs((prev) => [...prev, msg]);
   };
 
   const enviarDatos = async () => {
-    const usuario = { name, email, token };
+    const usuario = { name, email, token, dateTime };
 
     try {
-      log("Accediendo a la instalación...");
-      log(`Enviando datos: ${JSON.stringify(usuario)}`);
-
+      log("Enviando datos al ESP32...");
       const res = await fetch("http://192.168.4.1/datos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -25,9 +34,11 @@ export default function HomeScreen() {
       });
 
       const txt = await res.text();
-      log("Respuesta del ESP32: " + txt);
+      log("ESP32 respondió: " + txt);
+      Alert.alert("Éxito", "Datos enviados correctamente");
     } catch (error) {
-      log("Error: " + error.message);
+      log("Error al enviar datos: " + error.message);
+      Alert.alert("Error", error.message);
     }
   };
 
@@ -39,6 +50,7 @@ export default function HomeScreen() {
         backgroundColor: "#0f172a",
       }}
     >
+      {/* Título */}
       <Text
         style={{
           color: "white",
@@ -52,6 +64,7 @@ export default function HomeScreen() {
         Acceder a la instalación
       </Text>
 
+      {/* Fecha y hora */}
       <Text
         style={{
           color: "#94a3b8",
@@ -60,9 +73,10 @@ export default function HomeScreen() {
           marginBottom: 35,
         }}
       >
-        Estos son tus datos enviados desde Login
+        {dateTime}
       </Text>
 
+      {/* Tarjeta de información */}
       <View
         style={{
           backgroundColor: "rgba(255,255,255,0.05)",
@@ -96,6 +110,7 @@ export default function HomeScreen() {
           • Token: {token}
         </Text>
 
+        {/* Botón enviar */}
         <TouchableOpacity
           onPress={enviarDatos}
           style={{
@@ -123,11 +138,12 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Terminal interna */}
       <View
         style={{
           backgroundColor: "#000",
           marginTop: 30,
-          height: 200,
+          height: 150,
           borderRadius: 16,
           padding: 14,
           borderWidth: 1,
@@ -138,7 +154,11 @@ export default function HomeScreen() {
         }}
       >
         <Text
-          style={{ color: "#00ff9d", fontFamily: "monospace", fontSize: 14 }}
+          style={{
+            color: "#00ff9d",
+            fontFamily: "monospace",
+            fontSize: 14,
+          }}
         >
           {logs.length === 0 ? "Esperando acción..." : logs.join("\n")}
         </Text>

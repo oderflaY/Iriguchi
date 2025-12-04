@@ -11,10 +11,12 @@ let lastData = {};
 
 // Ruta para que el ESP32 envíe datos
 app.post("/datos", (req, res) => {
-  const data = req.body;
+  const data = req.body; // ESP32 envía JSON con name, email, token, dateTime
   console.log("📥 Datos recibidos del ESP32:", data);
 
-  lastData = data; // Guardamos los datos
+  // Guardamos los datos
+  lastData = data;
+
   res.json({ message: "Datos guardados correctamente" });
 });
 
