@@ -1,31 +1,44 @@
-// server.js
 const express = require("express");
 const cors = require("cors");
+const db = require("./database");
 
 const app = express();
-app.use(cors()); // Permite solicitudes desde cualquier origen (React)
-app.use(express.json()); // Permite recibir JSON en POST
+app.use(cors());
+app.use(express.json());
 
-// Variable para guardar los datos del ESP32
-let lastData = {};
-
-// Ruta para que el ESP32 envíe datos
+// Guardar datos
 app.post("/datos", (req, res) => {
-  const data = req.body; // ESP32 envía JSON con name, email, token, dateTime
-  console.log("📥 Datos recibidos del ESP32:", data);
+  const { name, email, token, dateTime } = req.body;
 
-  // Guardamos los datos
-  lastData = data;
+  try {
+    const stmt = db.prepare(
+      "INSERT INTO registros (name, email, token, dateTime) VALUES (?, ?, ?, ?)"
+    );
+    stmt.run(name, email, token, dateTime);
 
-  res.json({ message: "Datos guardados correctamente" });
+    // ✔ Señal para el ESP32
+    res.json({
+      status: "ok",
+      message: "Guardado correctamente",
+    });
+  } catch (error) {
+    console.error("Error al guardar:", error);
+
+    // ❌ Señal de error para el ESP32
+    res.json({
+      status: "error",
+      message: "No se pudo guardar",
+    });
+  }
 });
 
-// Ruta para que el frontend React lea los datos
+// Obtener el último registro
 app.get("/datos", (req, res) => {
-  res.json(lastData);
+  const row = db
+    .prepare("SELECT * FROM registros ORDER BY id DESC LIMIT 1")
+    .get();
+  res.json(row || {});
 });
 
 const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
